@@ -5,6 +5,9 @@ function Home() {
   const [planets, setPlanets] = useState([]);
   const [planetsFilter, setPlanetsFilter] = useState([]);
   const [name, setName] = useState('');
+  const [typeNumberValue, setTypeNumberValue] = useState('population');
+  const [compareFilter, setCompareFilter] = useState('maior que');
+  const [number, setNumber] = useState(0);
 
   const callApi = async () => {
     setPlanets(await starWarsApi());
@@ -28,10 +31,65 @@ function Home() {
     }
   };
 
+  const onClickTypeNumber = ({ target: { value } }) => {
+    setTypeNumberValue(value);
+  };
+
+  const onClickCompareFilter = ({ target: { value } }) => {
+    setCompareFilter(value);
+  };
+
+  const onChangeNumber = ({ target: { value } }) => {
+    setNumber(value);
+  };
+
+  const buttonFilterNumber = () => {
+    if (compareFilter === 'maior que') {
+      const filter = planetsFilter
+        .filter((element) => +element[typeNumberValue] > number);
+      return setPlanetsFilter(filter);
+    }
+    if (compareFilter === 'menor que') {
+      const filter = planetsFilter
+        .filter((element) => +element[typeNumberValue] < number);
+      return setPlanetsFilter(filter);
+    }
+    if (compareFilter === 'igual a') {
+      const filter = planetsFilter
+        .filter((element) => element[typeNumberValue] === number);
+      return setPlanetsFilter(filter);
+    }
+  };
+
   return (
     <div>
       <form>
         <input type="text" onChange={ filterName } data-testid="name-filter" />
+        <select data-testid="column-filter" onClick={ onClickTypeNumber }>
+          <option value="population">population</option>
+          <option value="orbital_period">orbital_period</option>
+          <option value="diameter">diameter</option>
+          <option value="rotation_period">rotation_period</option>
+          <option value="surface_water">surface_water</option>
+        </select>
+        <select data-testid="comparison-filter" onClick={ onClickCompareFilter }>
+          <option value="maior que">maior que</option>
+          <option value="menor que">menor que</option>
+          <option value="igual a">igual a</option>
+        </select>
+        <input
+          type="number"
+          data-testid="value-filter"
+          onChange={ onChangeNumber }
+          value={ number }
+        />
+        <button
+          type="button"
+          data-testid="button-filter"
+          onClick={ buttonFilterNumber }
+        >
+          Filter
+        </button>
       </form>
       <table>
         <tr>
