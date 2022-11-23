@@ -103,7 +103,6 @@ function Home() {
       });
     }
     if (typeSort === 'DESC') {
-      console.log('ok');
       return filtro.sort((a, b) => +b[typeNumberValueSort] - +a[typeNumberValueSort]);
     }
     return filtro;
@@ -111,7 +110,16 @@ function Home() {
   const sortFilterButton = () => {
     setTest(test + 1);
   };
+
   useEffect(() => {
+    if (filters.length === 0) {
+      const dez = 10;
+      SetLoading(true);
+      setPlanetsFilter(sortFilter(planetsFilter));
+      setTimeout(() => {
+        SetLoading(false);
+      }, dez);
+    }
     if (filters.length > 0) {
       filters.forEach((ele) => {
         if (ele.compareFilter === 'maior que') {
@@ -126,18 +134,13 @@ function Home() {
         }
         if (ele.compareFilter === 'igual a') {
           const filter = planetsFilter
-            .filter((element) => element[ele.typeNumberValue] === +ele.number);
+            .filter((element) => +element[ele.typeNumberValue] === +ele.number);
           return setPlanetsFilter(sortFilter(filter));
         }
       });
     }
-    const dez = 10;
-    SetLoading(true);
-    setPlanetsFilter(sortFilter(planetsFilter));
-    setTimeout(() => {
-      SetLoading(false);
-    }, dez);
   }, [test]);
+
   return (
     <div>
       <form>
