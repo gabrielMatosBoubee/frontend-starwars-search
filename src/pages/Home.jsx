@@ -23,6 +23,7 @@ function Home() {
   const [loading, SetLoading] = useState(false);
   const callApi = async () => {
     setPlanets(await starWarsApi());
+    setPlanetsFilter(await starWarsApi());
   };
   useEffect(() => {
     callApi();
@@ -57,7 +58,7 @@ function Home() {
     if (value === 'ASC') {
       setCheckedASC(true);
       setCheckedDESC(false);
-    } else {
+    } if (value === 'DESC') {
       setCheckedDESC(true);
       setCheckedASC(false);
     }
@@ -93,24 +94,24 @@ function Home() {
     setTest(test + 1);
   };
   const sortFilter = (filtro) => {
-    if (typeSort === 'ASC') {
-      const menosUm = -1;
+    const menosUm = -1;
+    if (typeSort === 'DESC') {
       return filtro.sort((a, b) => {
-        if (b[typeNumberValueSort] === 'unknown') {
-          return menosUm;
-        }
-        return (+a[typeNumberValueSort] - +b[typeNumberValueSort]);
+        if (b[typeNumberValueSort] === 'unknown') return menosUm;
+        return (+b[typeNumberValueSort] - +a[typeNumberValueSort]);
       });
     }
-    if (typeSort === 'DESC') {
-      return filtro.sort((a, b) => +b[typeNumberValueSort] - +a[typeNumberValueSort]);
+    if (typeSort === 'ASC') {
+      return filtro.sort((a, b) => {
+        if (b[typeNumberValueSort] === 'unknown') return menosUm;
+        return (+a[typeNumberValueSort] - +b[typeNumberValueSort]);
+      });
     }
     return filtro;
   };
   const sortFilterButton = () => {
     setTest(test + 1);
   };
-
   useEffect(() => {
     if (filters.length === 0) {
       const dez = 10;
@@ -140,7 +141,6 @@ function Home() {
       });
     }
   }, [test]);
-
   return (
     <div>
       <form>
@@ -220,28 +220,30 @@ function Home() {
       >
         remove tudo
       </button>
-      <table>
-        <tr>
-          {newArray.map((e) => <th key={ e }>{e}</th>)}
-        </tr>
-        {loading ? <p>loading</p> : planetsFilter.map((ele) => (
-          <tr key={ ele.name }>
-            <td data-testid="planet-name">{ele.name}</td>
-            <td>{ele.rotation_period}</td>
-            <td>{ele.orbital_period}</td>
-            <td>{ele.diameter}</td>
-            <td>{ele.climate}</td>
-            <td>{ele.gravity}</td>
-            <td>{ele.terrain}</td>
-            <td>{ele.surface_water}</td>
-            <td>{ele.population}</td>
-            <td>{ele.films.map((element) => `${element} `)}</td>
-            <td>{ele.created}</td>
-            <td>{ele.edited}</td>
-            <td>{ele.url}</td>
+      {loading ? <p>loading</p> : (
+        <table>
+          <tr>
+            {newArray.map((e) => <th key={ e }>{e}</th>)}
           </tr>
-        ))}
-      </table>
+          {planetsFilter.map((ele) => (
+            <tr key={ ele.name }>
+              <td data-testid="planet-name">{ele.name}</td>
+              <td>{ele.rotation_period}</td>
+              <td>{ele.orbital_period}</td>
+              <td>{ele.diameter}</td>
+              <td>{ele.climate}</td>
+              <td>{ele.gravity}</td>
+              <td>{ele.terrain}</td>
+              <td>{ele.surface_water}</td>
+              <td>{ele.population}</td>
+              <td>{ele.films.map((element) => `${element} `)}</td>
+              <td>{ele.created}</td>
+              <td>{ele.edited}</td>
+              <td>{ele.url}</td>
+            </tr>
+          ))}
+        </table>
+      )}
     </div>
   );
 }
