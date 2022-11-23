@@ -2,12 +2,18 @@ import React, { useEffect, useState } from 'react';
 import starWarsApi from '../services';
 
 function Home() {
+  const array = ['population', 'orbital_period', 'diameter',
+    'rotation_period', 'surface_water'];
+
   const [planets, setPlanets] = useState([]);
   const [planetsFilter, setPlanetsFilter] = useState([]);
   const [name, setName] = useState('');
   const [typeNumberValue, setTypeNumberValue] = useState('population');
   const [compareFilter, setCompareFilter] = useState('maior que');
   const [number, setNumber] = useState(0);
+  const [allTypesNumberValue, setAllTypesNumberValue] = useState(array);
+  const [filters, setFilters] = useState([]);
+  const [test, setTest] = useState(0);
 
   const callApi = async () => {
     setPlanets(await starWarsApi());
@@ -43,7 +49,7 @@ function Home() {
     setNumber(value);
   };
 
-  const buttonFilterNumber = () => {
+  const filterNumber = () => {
     if (compareFilter === 'maior que') {
       const filter = planetsFilter
         .filter((element) => +element[typeNumberValue] > number);
@@ -61,16 +67,67 @@ function Home() {
     }
   };
 
+  const buttonFilterNumber = () => {
+    const valuesOfFiltersArray = filters;
+    const valuesOfFilter = {
+      typeNumberValue,
+      compareFilter,
+      number,
+    };
+    valuesOfFiltersArray.push(valuesOfFilter);
+    setFilters(valuesOfFiltersArray);
+
+    const AllTypesFilter = allTypesNumberValue.filter((ele) => ele !== typeNumberValue);
+    setAllTypesNumberValue(AllTypesFilter);
+    setTypeNumberValue(AllTypesFilter[0]);
+
+    filterNumber();
+  };
+
+  const deleteButtonFilter = (type) => {
+    setPlanetsFilter(planets);
+    const filtro = filters.filter((ele) => ele.typeNumberValue !== type);
+    const deu = allTypesNumberValue;
+    deu.push(type);
+    setAllTypesNumberValue(deu);
+    setFilters(filtro);
+    setTest(test + 1);
+  };
+
+  const buttonDeleteAll = () => {
+    setPlanetsFilter(planets);
+    setAllTypesNumberValue(array);
+    setFilters([]);
+    setTest(test + 1);
+  };
+
+  useEffect(() => {
+    filters.forEach((ele) => {
+      if (ele.compareFilter === 'maior que') {
+        const filter = planetsFilter
+          .filter((element) => +element[ele.typeNumberValue] > +ele.number);
+        return setPlanetsFilter(filter);
+      }
+      if (ele.compareFilter === 'menor que') {
+        const filter = planetsFilter
+          .filter((element) => +element[ele.typeNumberValue] < +ele.number);
+        return setPlanetsFilter(filter);
+      }
+      if (ele.compareFilter === 'igual a') {
+        const filter = planetsFilter
+          .filter((element) => element[ele.typeNumberValue] === +ele.number);
+        return setPlanetsFilter(filter);
+      }
+    });
+  }, [test]);
+
   return (
     <div>
       <form>
         <input type="text" onChange={ filterName } data-testid="name-filter" />
         <select data-testid="column-filter" onClick={ onClickTypeNumber }>
-          <option value="population">population</option>
-          <option value="orbital_period">orbital_period</option>
-          <option value="diameter">diameter</option>
-          <option value="rotation_period">rotation_period</option>
-          <option value="surface_water">surface_water</option>
+          {allTypesNumberValue
+            .map((types) => <option key={ types } value={ types }>{types}</option>)}
         </select>
         <select data-testid="comparison-filter" onClick={ onClickCompareFilter }>
           <option value="maior que">maior que</option>
@@ -91,6 +148,24 @@ function Home() {
           Filter
         </button>
       </form>
+      {filters.map((filtersUsed) => (
+        <div key={ filtersUsed.typeNumberValue } data-testid="filter">
+          <p>{filtersUsed.typeNumberValue}</p>
+          <button
+            type="button"
+            onClick={ () => deleteButtonFilter(filtersUsed.typeNumberValue) }
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        data-testid="button-remove-filters"
+        onClick={ buttonDeleteAll }
+      >
+        remove tudo
+      </button>
       <table>
         <tr>
           <th>Name</th>
