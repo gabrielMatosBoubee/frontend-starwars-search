@@ -9,10 +9,13 @@ function Home() {
     'Created', 'Edited', 'URL'];
   const [planets, setPlanets] = useState([]);
   const [planetsFilter, setPlanetsFilter] = useState([]);
-  const [name, setName] = useState('');
-  const [typeNumberValue, setTypeNumberValue] = useState('population');
-  const [compareFilter, setCompareFilter] = useState('maior que');
-  const [number, setNumber] = useState(0);
+  const [names, setName] = useState('');
+  const [filter, setFilter] = useState({
+    column: 'population',
+    compareFilter: 'maior que',
+    number: 0,
+  });
+
   const [allTypesNumberValue, setAllTypesNumberValue] = useState(array);
   const [filters, setFilters] = useState([]);
   const [test, setTest] = useState(0);
@@ -27,12 +30,13 @@ function Home() {
   };
   useEffect(() => {
     callApi();
+    SetLoading(false);
   }, []);
   useEffect(() => {
-    if (name.length === 0) {
+    if (names.length === 0) {
       setPlanetsFilter(planets);
     }
-  }, [name.length, planets]);
+  }, [names.length, planets]);
   const filterName = ({ target: { value } }) => {
     setName(value);
     if (value.length > 0) {
@@ -41,15 +45,10 @@ function Home() {
       setPlanetsFilter(planetsFilterByName);
     }
   };
-  const onClickTypeNumber = ({ target: { value } }) => {
-    setTypeNumberValue(value);
-  };
-  const onClickCompareFilter = ({ target: { value } }) => {
-    setCompareFilter(value);
-  };
-  const onChangeNumber = ({ target: { value } }) => {
-    setNumber(value);
-  };
+
+  const onClickFilter = ({ target: { name, value } }) => (setFilter({ ...filter,
+    [name]: value }));
+
   const onClickTypeNumberSort = ({ target: { value } }) => {
     setTypeNumberValueSort(value);
   };
@@ -65,22 +64,17 @@ function Home() {
   };
   const buttonFilterNumber = () => {
     const valuesOfFiltersArray = filters;
-    const valuesOfFilter = {
-      typeNumberValue,
-      compareFilter,
-      number,
-    };
-    valuesOfFiltersArray.push(valuesOfFilter);
+    valuesOfFiltersArray.push(filter);
     setFilters(valuesOfFiltersArray);
 
-    const AllTypesFilter = allTypesNumberValue.filter((ele) => ele !== typeNumberValue);
+    const AllTypesFilter = allTypesNumberValue.filter((ele) => ele !== filter.column);
     setAllTypesNumberValue(AllTypesFilter);
-    setTypeNumberValue(AllTypesFilter[0]);
+    setFilter({ ...filter, column: AllTypesFilter[0] });
     setTest(test + 1);
   };
   const deleteButtonFilter = (type) => {
     setPlanetsFilter(planets);
-    const filtro = filters.filter((ele) => ele.typeNumberValue !== type);
+    const filtro = filters.filter((ele) => ele.column !== type);
     const deu = allTypesNumberValue;
     deu.push(type);
     setAllTypesNumberValue(deu);
@@ -113,7 +107,7 @@ function Home() {
     setTest(test + 1);
   };
   useEffect(() => {
-    if (filters.length === 0) {
+    if (filters.length === 0 && test !== 0) {
       const dez = 10;
       SetLoading(true);
       setPlanetsFilter(sortFilter(planetsFilter));
@@ -124,19 +118,19 @@ function Home() {
     if (filters.length > 0) {
       filters.forEach((ele) => {
         if (ele.compareFilter === 'maior que') {
-          const filter = planetsFilter
-            .filter((element) => +element[ele.typeNumberValue] > +ele.number);
-          return setPlanetsFilter(sortFilter(filter));
+          const filterPlanet = planetsFilter
+            .filter((element) => +element[ele.column] > +ele.number);
+          return setPlanetsFilter(sortFilter(filterPlanet));
         }
         if (ele.compareFilter === 'menor que') {
-          const filter = planetsFilter
-            .filter((element) => +element[ele.typeNumberValue] < +ele.number);
-          return setPlanetsFilter(sortFilter(filter));
+          const filterPlanet = planetsFilter
+            .filter((element) => +element[ele.column] < +ele.number);
+          return setPlanetsFilter(sortFilter(filterPlanet));
         }
         if (ele.compareFilter === 'igual a') {
-          const filter = planetsFilter
-            .filter((element) => +element[ele.typeNumberValue] === +ele.number);
-          return setPlanetsFilter(sortFilter(filter));
+          const filterPlanet = planetsFilter
+            .filter((element) => +element[ele.column] === +ele.number);
+          return setPlanetsFilter(sortFilter(filterPlanet));
         }
       });
     }
@@ -145,11 +139,15 @@ function Home() {
     <div>
       <form>
         <input type="text" onChange={ filterName } data-testid="name-filter" />
-        <select data-testid="column-filter" onClick={ onClickTypeNumber }>
+        <select data-testid="column-filter" name="column" onChange={ onClickFilter }>
           {allTypesNumberValue
             .map((types) => <option key={ types } value={ types }>{types}</option>)}
         </select>
-        <select data-testid="comparison-filter" onClick={ onClickCompareFilter }>
+        <select
+          data-testid="comparison-filter"
+          name="compareFilter"
+          onChange={ onClickFilter }
+        >
           <option value="maior que">maior que</option>
           <option value="menor que">menor que</option>
           <option value="igual a">igual a</option>
@@ -157,8 +155,9 @@ function Home() {
         <input
           type="number"
           data-testid="value-filter"
-          onChange={ onChangeNumber }
-          value={ number }
+          name="number"
+          onChange={ onClickFilter }
+          value={ filter.number }
         />
         <button
           type="button"
@@ -203,11 +202,11 @@ function Home() {
         </button>
       </form>
       {filters.map((filtersUsed) => (
-        <div key={ filtersUsed.typeNumberValue } data-testid="filter">
-          <p>{filtersUsed.typeNumberValue}</p>
+        <div key={ filtersUsed.column } data-testid="filter">
+          <p>{filtersUsed.column}</p>
           <button
             type="button"
-            onClick={ () => deleteButtonFilter(filtersUsed.typeNumberValue) }
+            onClick={ () => deleteButtonFilter(filtersUsed.column) }
           >
             Delete
           </button>
